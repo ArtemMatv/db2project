@@ -1,0 +1,115 @@
+﻿@using Cursova.Models
+@{
+    ViewBag.Title = "Редагування мат. плати";
+}
+
+<div class="container cont-styling col-lg-5">
+    <button class="btn btn-danger" style="padding:20px;margin-left:200px;" id="goback">Повернутися</button>
+    <h3>Материнська плата</h3>
+    <input class="form-control" type="text" id="name" placeholder="Назва">
+    <br />
+    <input class="form-control" type="text" id="series" placeholder="Серія">
+    <br />
+    <select class="form-select" placeholder="Виробник" id="producer">
+        @foreach (string pr in ViewBag.Producers)
+        {
+            <option>@pr</option>
+        }
+    </select>
+    <br />
+    <select class="form-select" placeholder="Сокет" id="socket">
+        @foreach (string socket in ViewBag.Sockets)
+        {
+            <option>@socket</option>
+        }
+    </select>
+    <br />
+    <select class="form-select" placeholder="Чіпсет" id="chipset">
+        @foreach (string chipset in ViewBag.Chipsets)
+        {
+            <option>@chipset</option>
+        }
+    </select>
+    <br />
+    <select class="form-select" placeholder="Звуковий чіп" id="sch">
+        @foreach (string sch in ViewBag.SoundChips)
+        {
+            <option>@sch</option>
+        }
+    </select>
+    <br />
+    <div class="form-check">
+        <input class="form-check-input" type="checkbox" value="" id="IntVid">
+        <label class="form-check-label" for="flexCheckDefault">
+            Інтегрвана графіка
+        </label>
+    </div>
+    <br />
+    <input class="form-control" type="text" id="RAMmax" placeholder="Максимальний об'єм ОЗП">
+    <br />
+    <input class="form-control" type="number" id="RAMamo" placeholder="Кількість слотів ОЗП">
+    <br />
+    <input class="form-control" type="number" id="M2amo" placeholder="Кількість слотів M2">
+    <br />
+    <input class="form-control" type="number" id="SATAamo" placeholder="Кількість слотів SATA III">
+    <br />
+    <input class="form-control" type="number" id="PCIEamo" placeholder="Кількість слотів PCI-Express">
+    <br />
+    <input class="form-control" type="text" id="FmbVidOut" placeholder="Виходи">
+    <br />
+    <input class="form-control" type="text" id="FormF" placeholder="Форм-фактор">
+    <br />
+    <input class="form-control" type="number" id="Price" placeholder="Ціна">
+    <br />
+    <input class="form-control" type="number" id="Width" placeholder="Ширина">
+    <br />
+    <input class="form-control" type="number" id="Height" placeholder="Висота">
+    <br />
+    <button class="btn btn-danger butt" id="save">Зберегти</button>
+</div>
+
+<script>
+    window.onload = function () {
+        document.getElementById("goback").onclick = () => {
+            location.href = "/"
+        }
+
+        document.querySelector("#save").onclick = () => {
+            let data = {
+                Name: document.querySelector("#name").value,
+                MbPrId: document.querySelector("#producer").value,
+                SckId: document.querySelector("#socket").value,
+                ChsId: document.querySelector("#chipset").value,
+                SchId: document.querySelector("#sch").value,
+                RamMax: document.querySelector("#RAMmax").value,
+                RamAmo: document.querySelector("#RAMamo").value,
+                M2Amo: document.querySelector("#M2amo").value,
+                SataAmo: document.querySelector("#SATAamo").value,
+                PcieAmo: document.querySelector("#PCIEamo").value,
+                FmbVidOut: document.querySelector("#FmbVidOut").value,
+                FormF: document.querySelector("#FormF").value,
+                Price: document.querySelector("#Price").value,
+                Width: document.querySelector("#Width").value,
+                Height: document.querySelector("#Height").value,
+                IntVid: document.querySelector("#IntVid").checked ? 1 : 0
+            }
+            $.ajax({
+                type: "POST",
+                data: data,
+                url: `/Home/AddMotherboard`,
+                success: (resp) => {
+                    if (resp.success) {
+                        location.href = "/"
+                    }
+                    else {
+                        console.log(resp);
+                    }
+                },
+                error: (resp) => {
+                    console.log(resp);
+                }
+            });
+        }
+    };
+
+</script>

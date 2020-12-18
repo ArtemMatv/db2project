@@ -1,0 +1,205 @@
+﻿@{
+    ViewBag.Title = "Материнські плати";
+}
+
+<div class="row">
+    <div class="col-lg-3">
+        <div class="details">
+            <div class="info">
+                <div class="detail">
+                    <div class="infoLogo defaultInfoField"><img src="" width="100%" /></div>
+                    <table class="table table-responsive">
+                        <tr class="infoCon">
+                            <th>Країна походження:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoIntVid">
+                            <th>Інтегрована графіка:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoRAMmax">
+                            <th>Максимальний об'єм ОЗП, Гб:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoRAMamo">
+                            <th>Слотів ОЗП:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoM2amo">
+                            <th>Слотів М2:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoSATAamo">
+                            <th>Слотів SATA III:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoPCIEamo">
+                            <th>Слотів PCI-Express:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoFmbVidOut">
+                            <th>Виходи:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoFormF">
+                            <th>Форм-фактор:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoPrice">
+                            <th>Ціна, грн:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoHeight">
+                            <th>Висота, мм:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                        <tr class="infoWidth">
+                            <th>Ширина, мм:</th>
+                            <td class="defaultInfoField"><span></span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-9">
+        <h1 class="signature">Робота студента групи ПД-31, ННІІТ</h1>
+        <h1 class="signature">Матвійчука Артема Миколайовича</h1>
+        <h2 class="name">Материнські плати</h2>
+        <button class="btn btn-info" id="add">Додати материнську плату</button>
+        <br />
+        <div class="tab-content">
+            <div class="table-motherboards" id="mytable"></div>
+        </div>
+    </div>
+</div>
+
+
+<script src="~/Scripts/tabulator.js"></script>
+
+<script>
+    var tableExt;
+    Tabulator.prototype.extendModule("format", "formatters", {
+
+        deletemotherboard: function (cell, formatterParams) {
+            let id = cell.getRow().getData().Id;
+
+            let div = document.createElement("div");
+            div.classList.add("controls-container");
+
+            let deleteBtn = document.createElement("button");
+            deleteBtn.classList.add("deleteBtn");
+            deleteBtn.classList.add("smlBtn");
+            deleteBtn.classList.add("cell-btn");
+            deleteBtn.id = `can_${id}`;
+            deleteBtn.onclick = async function (e) {
+                $.ajax({
+                    type: "POST",
+                    data: { "id": id },
+                    url: `/Home/DeleteMotherboard`,
+                    success: (resp) => {
+                        if (resp.success)
+                            tableExt.setData();
+                    },
+                    error: (resp) => {
+                        console.log(resp);
+                    }
+                });
+            };
+            div.appendChild(deleteBtn);
+            
+           
+
+            return div;
+        }
+    });
+
+    function matchAny(data, filterParams) {
+        //data - the data for the row being filtered
+        //filterParams - params object passed to the filter
+
+        var match = false;
+
+        for (var key in data) {
+            if (data[key].includes(filterParams.value)) {
+                match = true;
+            }
+        }
+
+        return match;
+    }
+
+
+    tableExt = new Tabulator(".table-motherboards", {
+        ajaxURL: `/Home/GetTableMotherboards`,
+        ajaxConfig: "POST",
+        contentType: "application/json; charset=utf-8",
+        layout: "fitColumns",
+        ajaxFiltering: true,
+        height: 800,
+        columns: [
+            { title: "Код", field: "Id", width: 80, headerSort: false },
+            { title: "Назва", field: "Name", headerSort: false },
+            { title: "Серія", field: "Series", headerSort: false },
+            { title: "Виробник", field: "MbPr", headerSort: false },
+            { title: "Сокет", field: "Sck", headerSort: false },
+            { title: "Чіпсет", field: "Chs", headerSort: false },
+            { title: "Звуковий чіп", field: "Sch", headerSort: false },
+            { title: "Підтримка ОЗП", field: "Ram", headerSort: false },
+            { title: "Видалити", field: "Action", width: 126, formatter: "deletemotherboard", sorter: "string", headerSort: false }
+        ],
+        ajaxSorting: true,
+        pagination: "remote",
+        paginationSize: 10,
+        ajaxRequesting: function (url, params) {
+            console.log(params);
+        },
+        ajaxResponse: function (url, params, response) {
+            console.log(response);
+            return response;
+        },
+        selectable: 1,
+        rowClick: function (e, row) {
+            let id = row.getData().Id;
+            let data;
+            $.ajax({
+                type: "POST",
+                data: { "id": id },
+                url: `/Home/GetMotherboardDetail`,
+                success: (resp) => {
+                    if (resp.success) {
+                        data = resp.detail;
+                        if (data != undefined) {
+                            //document.querySelector(`.info .noInfo`).style.display = "none";
+                            document.querySelector(`.info .detail`).style.display = "flex";
+                            document.querySelector(`.info .infoCon span`).innerText = data[0];
+                            document.querySelector(`.info .infoIntVid span`).innerText = data[1] == 1 ? "Наявна" : "Відсутня";
+                            document.querySelector(`.info .infoRAMmax span`).innerText = data[2];
+                            document.querySelector(`.info .infoRAMamo span`).innerText = data[3];
+                            document.querySelector(`.info .infoM2amo span`).innerText = data[4];
+                            document.querySelector(`.info .infoSATAamo span`).innerText = data[5];
+                            document.querySelector(`.info .infoPCIEamo span`).innerText = data[6];
+                            document.querySelector(`.info .infoFmbVidOut span`).innerText = data[7];
+                            document.querySelector(`.info .infoFormF span`).innerText = data[8];
+                            document.querySelector(`.info .infoPrice span`).innerText = data[9];
+                            document.querySelector(`.info .infoHeight span`).innerText = data[10];
+                            document.querySelector(`.info .infoWidth span`).innerText = data[11];
+                            document.querySelector(`.info .infoLogo img`).src = data[12];
+                        }
+                    }
+                    else {
+                        console.log("Error", "danger", 2);
+                    }
+                },
+                error: (resp) => {
+                    console.log(resp);
+                }
+            });
+            row.select();
+        },
+    });
+
+    document.getElementById("add").onclick = () => {
+        location.href = "/Home/AddMotherboard"
+    }
+</script>
